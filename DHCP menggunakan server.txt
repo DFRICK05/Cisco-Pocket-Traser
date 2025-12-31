@@ -1,0 +1,190 @@
+DHCP SERVER 
+Project kampus
+
+1.setting server dhcp, dns , link
+dhcp 
+ip 192.168.10.10
+GT 192.168.10.1
+dns 192.168.10.11
+
+kebagian service pilih dhcp on kan sisa yg lain off kan
+- tinggal masukan 1 1 
+pool name vlan 10
+default gateway contoh vlan 10 192.168.10.1
+dns server 192.168.10.11
+start ip 192.168.10.20
+save 
+
+dns
+ip192.168.10.11
+GT192.168.10.1
+DNS192.168.10.11
+nyalakan dns masukan name
+contoh www.google.com
+ip nya arah ke link server 192.168.10.12
+
+dns
+ip192.168.10.12
+GT192.168.10.1
+
+
+
+
+2. SW core dan anakanya bikin vlan 
+vlan 10 > 60 bedakan Namanya
+Switch(config)#vlan 10
+Switch(config-vlan)#name server
+Switch(config-vlan)#vlan 20
+Switch(config-vlan)#name keuangan
+Switch(config-vlan)#vlan 30
+Switch(config-vlan)#name labKom
+Switch(config-vlan)#vlan 40
+Switch(config-vlan)#name Kantor
+Switch(config-vlan)#vlan 50
+Switch(config-vlan)#name R.Dosen
+Switch(config-vlan)#vlan 60
+Switch(config-vlan)#name Kelas
+Switch(config-vlan)#ex
+
+ke arah router
+witch(config)#int range fa0/23-24
+Switch(config-if-range)#sw mode trunk
+
+memberi access vlan 10 ke server dan memberi trunk ke swBantuan
+Switch(config-if-range)#int range fa0/20-23
+Switch(config-if-range)#sw mode access
+Switch(config-if-range)#sw access vlan 10
+Switch(config-if-range)#int fa0/23
+Switch(config-if)#sw mode trunk
+
+
+3.vlan bantuan pun sama bikin vlan dan trunk
+vlan 10>60 
+trunk sesuai port
+
+4.vlan alternatif
+sama seperti no 3
+
+6. untuk swLab, swkantorA/B, swDosen, Swkelas A/B 
+bikin vlan juga 10 > 60 
+dan vlan access seusai portnya 
+
+7.Router core
+enable
+configure terminal
+hostname R-CORE
+
+interface g0/0
+ no shutdown
+
+! VLAN 10 - SERVER (Gunakan IP .2)
+interface g0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.2 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 priority 110
+ standby 10 preempt
+
+! VLAN 20 - KEUANGAN
+interface g0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.2 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 20 ip 192.168.20.1
+ standby 20 priority 110
+ standby 20 preempt
+ ip access-group 101 out
+
+! VLAN 30 - LAB KOMPUTER
+interface g0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.30.2 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 30 ip 192.168.30.1
+ standby 30 priority 110
+ standby 30 preempt
+
+interface g0/0.40
+ encapsulation dot1Q 40
+ ip address 192.168.40.2 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 40 ip 192.168.40.1
+ standby 40 priority 110
+ standby 40 preempt
+
+! VLAN 50 - DOSEN
+interface g0/0.50
+ encapsulation dot1Q 50
+ ip address 192.168.50.2 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 50 ip 192.168.50.1
+ standby 50 priority 110
+ standby 50 preempt
+
+! VLAN 60 - RUANG KELAS
+interface g0/0.60
+ encapsulation dot1Q 60
+ ip address 192.168.60.2 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 60 ip 192.168.60.1
+ standby 60 priority 110
+ standby 60 preempt
+
+! SETTING ACL (KEAMANAN KEUANGAN)
+access-list 101 permit ip 192.168.50.0 0.0.0.255 192.168.20.0 0.0.0.255
+access-list 101 permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+access-list 101 deny ip any 192.168.20.0 0.0.0.255
+access-list 101 permit ip any any
+
+
+8. ini untuk router backup jika router core mengalami gangguan
+router backup
+enable
+configure terminal
+hostname R-BACKUP
+
+interface g0/0
+ no shutdown
+
+interface g0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.3 255.255.255.0
+ standby 10 ip 192.168.10.1
+
+interface g0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.3 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 20 ip 192.168.20.1
+ ip access-group 101 out
+
+interface g0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.30.3 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 30 ip 192.168.30.1
+
+interface g0/0.40
+ encapsulation dot1Q 40
+ ip address 192.168.40.3 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 40 ip 192.168.40.1
+
+interface g0/0.50
+ encapsulation dot1Q 50
+ ip address 192.168.50.3 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 50 ip 192.168.50.1
+
+interface g0/0.60
+ encapsulation dot1Q 60
+ ip address 192.168.60.3 255.255.255.0
+ ip helper-address 192.168.10.10
+ standby 60 ip 192.168.60.1
+
+! ACL HARUS SAMA DENGAN ROUTER CORE
+access-list 101 permit ip 192.168.50.0 0.0.0.255 192.168.20.0 0.0.0.255
+access-list 101 permit ip 192.168.10.0 0.0.0.255 192.168.20.0 0.0.0.255
+access-list 101 deny ip any 192.168.20.0 0.0.0.255
+access-list 101 permit ip any any
+
