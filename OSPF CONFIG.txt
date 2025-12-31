@@ -1,0 +1,430 @@
+OSPF CONFIG
+TOPOLOGINYA SEPERTI APA
+MENGGUNAKAN SERIAL
+
+vlan 10 IT
+vlan 20 Admin
+vlan 30 Sales
+vlan 40 HR
+vlan 50 Finance
+Vlan 60 Logistics
+vlan 70 Store
+Vlan 80 Reception
+
+1.pilih router 2911 menggunakan serial dce
+- ubah nama bebas contoh f1-router , f2-router, f3-router
+- ip 10.10.10.0/30 , 10.10.10.4/30 ,10.10.10.8/30
+
+sambungkan f3-router se0/2/0  , ke f1-router se0/2/0 
+sambungkan f3-routerse0/2/1, ke f2-router se0/1/0
+sambungkan f2-routerse0/1/1 ke f1-router 0/2/1
+
+2. tambkan 3 unit switch ubah Namanya juga sesuai router
+di router f2-router
+di router f1-router
+di router f3-router
+-sambungkan ke router masing2
+
+3. tambahkan pc dan printer 
+f1-router 3 unit pc dan 3 unit printer Logistics, Store, Reseption
+f2-router 3 unit pc dan 3 unit printer Sales,HR,Finance
+f3-router 2 unit pc dan 2 unit printer it, admin
+tambahan akses point 3 unit 
+
+- lalu sambungkan menggunakan copper straight
+
+4.dari 3 router itu dibagi jadi 3 
+kasih tanda Contoh 1st floor 2nd floor and 3nd floor
+
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 10 192.168.1.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 20 192.168.2.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 30 192.168.3.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 40 192.168.4.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 50 192.168.5.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 60 192.168.6.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 70 192.168.7.0/24)
+- 1 pc dan 1 printer itu sudah 1 kelompok ( vlan 80 192.168.8.0/24)
+
+
+5. configurasi f3-router
+- en
+conf
+int se0/2/0 
+no sh > supaya aktif
+ex
+
+- int se0/2/1
+no sh
+
+- int gig0/0 > SW
+no sh
+
+-int se0/2/0 
+clock rate ? akan banyak pilihan kita pilih 64000 = standar
+clock rate 64000
+ex
+
+-int se0/2/1
+clock rate 64000
+do write
+
+6. configurasi f1-router
+- en
+conf
+int se0/2/0
+no sh
+ex
+
+-int se0/2/1
+no sh
+ex
+
+- int gig0/0 SW
+no sh
+
+TIDAK PERLU CLOCK RATE KARNA TIDAK ADA LOGO JAM DI PORT NYA.
+
+7.configurasi f2-router
+-en
+conf
+int se0/1/0
+no sh
+ex
+
+- int se0/1/1
+no sh
+ex
+
+- int gig0/0 
+no sh
+do wr
+
+int se0/1/1
+clock rate 64000
+do wr
+ex
+
+8.buka SW1 > CLI
+- en
+conf
+int range fa0/2-3
+sw mode access
+sw access vlan 80
+ex
+
+-int range fa0/4-5
+sw mode access 
+sw access vlan 70
+ex
+
+-int range fa0/6-7
+sw mode access
+sw access vlan 60
+do wr
+ex
+
+-int fa0/1 
+sw mode trunk 
+do wr
+ex
+
+9.buka SW2 > CLI
+- en
+conf
+int range fa0/2-4
+sw mode access
+sw access vlan 30
+ex
+
+-int range fa0/5-6
+sw mode access 
+sw access vlan 40
+ex
+
+-int range fa0/7-8
+sw mode access
+sw access vlan 50
+do wr
+ex
+
+-int fa0/1 
+sw mode trunk 
+do wr
+ex
+
+10.buka SW3 > CLI
+- en
+conf
+int range fa0/2-4
+sw mode access
+sw access vlan 10
+ex
+
+-int range fa0/5-6
+sw mode access 
+sw access vlan 20
+ex
+
+-int fa0/1 
+sw mode trunk 
+do wr
+ex
+
+11. configurasi f1-router
+int se0/2/0
+ip address 10.10.10.5 255.255.255.252
+ex
+
+int se0/2/1
+ip address 10.10.10.9 255.255.255.252
+do wr
+ex
+
+12.configurasi f2-router
+int se0/1/0
+ip address 10.10.10.1 255.255.255.252
+ex
+
+int se0/1/1
+ip address 10.10.10.10 255.255.255.252
+do wr
+ex
+
+12.configure f3-router
+int se0/2/1
+ip address 10.10.10.2 255.255.255.252
+ex
+
+int se0/2/0
+ip address 10.10.10.6 255.255.255.252
+do wr
+ex
+
+
+13.configure f1-router dhcp
+en
+conf
+int gig0/0.80
+encapsulation dot1q 80
+ip address 192.168.8.1 255.255.255.0 = ip sudah di set oleh soal 
+ex
+
+int gig0/0.70
+encapsulation dot1q 70
+ip address 192.168.7.1 255.255.255.0
+ex
+
+int gig0/0.60
+encapsulation dot1q 60
+ip address 192.168.6.1 255.255.255.0
+do wr
+ex
+
+- DHCP pool
+ip dhcp pool Reseption
+network 192.168.8.0 255.255.255.0
+default-router 192.168.8.1
+dns-server 192.168.8.1
+
+ip dhcp pool Store
+network 192.168.7.0 255.255.255.0
+default-router 192.168.7.1
+dns-server 192.168.7.1
+
+ip dhcp pool Logistics
+network 192.168.6.0 255.255.255.0
+default-router 192.168.6.1
+dns-server 192.168.6.1
+do wr
+ex
+cek terlebih dahulu apakah dhcp berhasil atau tidak dan melakukan tes ping 
+
+
+
+15.configure f2-router dhcp
+en
+conf
+int gig0/0.30
+encapsulation dot1q 30
+ip address 192.168.3.1 255.255.255.0 = ip sudah di set oleh soal 
+ex
+
+int gig0/0.40
+encapsulation dot1q 40
+ip address 192.168.4.1 255.255.255.0
+ex
+
+int gig0/0.50
+encapsulation dot1q 50
+ip address 192.168.5.1 255.255.255.0
+do wr
+ex
+
+- DHCP pool
+ip dhcp pool Sales
+network 192.168.3.0 255.255.255.0
+default-router 192.168.3.1
+dns-server 192.168.3.1
+
+ip dhcp pool HR
+network 192.168.4.0 255.255.255.0
+default-router 192.168.4.1
+dns-server 192.168.4.1
+
+ip dhcp pool Finance
+network 192.168.5.0 255.255.255.0
+default-router 192.168.5.1
+dns-server 192.168.5.1
+do wr
+ex
+cek terlebih dahulu apakah dhcp berhasil atau tidak dan melakukan tes ping 
+
+16.configure f3-router dhcp
+en
+conf
+int gig0/0.10
+encapsulation dot1q 10
+ip address 192.168.1.1 255.255.255.0 = ip sudah di set oleh soal 
+ex
+
+int gig0/0.20
+encapsulation dot1q 20
+ip address 192.168.2.1 255.255.255.0
+ex
+
+- DHCP pool
+ip dhcp pool IT
+network 192.168.1.0 255.255.255.0
+default-router 192.168.1.1
+dns-server 192.168.1.1
+
+ip dhcp pool Admin
+network 192.168.2.0 255.255.255.0
+default-router 192.168.2.1
+dns-server 192.168.2.1
+
+do wr
+cek terlebih dahulu apakah dhcp berhasil atau tidak dan melakukan tes ping 
+
+
+17. configure f1-router
+configure biar bisa menghubungkan Menggunakan OSPF
+
+-en
+conf
+router ospf
+network 10.10.10.4 255.255.255.252 area 0
+network 10.10.10.8 255.255.255.252 area 0
+network 192.168.8.0 255.255.255.0 area 0
+network 192.168.7.0 255.255.255.0 area 0
+network 192.168.6.0 255.255.255.0 area 0
+
+do wr
+
+18. configure f2-router
+-en
+conf
+router ospf
+network 10.10.10.0 255.255.255.252 area 0
+network 10.10.10.8 255.255.255.252 area 0
+network 192.168.3.0 255.255.255.0 area 0
+network 192.168.4.0 255.255.255.0 area 0
+network 192.168.5.0 255.255.255.0 area 0
+
+do wr
+
+19. configure f3-router
+-en
+conf
+network 10.10.10.0 255.255.255.252 area 0
+network 10.10.10.4 255.255.255.252 area 0
+network 192.168.1.0 255.255.255.0 area 0
+network 192.168.2.0 255.255.255.0 area 0
+
+do wr
+ex
+
+20. setting wirelees perangkat AP 
+tambahkan hp,laptop,tablet
+
+21. configure f3-router
+SSH
+
+-en
+conf
+hostname f3-router
+ip domain-name GTECH
+username GTECH password GTECH
+
+crypto key generate rsa
+1024
+line vty 0 15 = virtual terminal , 0 15 = nomor jalur atau 16 orang sei login bareng.
+
+login local
+transport input ssh
+do wr
+exit
+
+22.configurasi f2-router
+SSH
+
+en
+conf
+hostname f2-router
+ip domain-name GTECH
+username GTECH password GTECH
+
+crypto key generate rsa
+1024
+line vty 0 15
+login local
+transport input ssh
+do wr
+
+23.configure f1-route
+SSH
+
+en
+conf
+hostname f1-router
+ip domain-name GTECH
+username GTECH password GTECH
+
+crypto key generate rsa
+1024
+line vty 0 15
+login local
+transport input ssh
+do wr
+
+24. cara login ssh di terminal
+
+masuk ke command promp
+ssh -l GTECH 192.168.6.1 
+password : GTECH 
+kalo enable ada bacaan ini 
+F1-R>en
+% No password set.
+
+kalian ke router 
+en 
+conf 
+enable secret masukin password yang tadi buat GTECH
+
+
+25. configure SW3
+en
+confi 
+int fa0/2 > arah ke pc 
+sw port-security maximum 1
+sw port-security mac-address sticky
+sw port-security violation?
+ada pilihan, pilih saja shutdown
+
+sw port-security violation shutdown
+
+do wr
+
+do show start
+do sh port-security
+
